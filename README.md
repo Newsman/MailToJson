@@ -35,11 +35,11 @@ json:
     - { name: "Recipient Name", email: "recpient@email.com" }
     - { name: "Recipient Name 2", email: "recpient2@email.com" }
   parts: 
-    - { "content_type": "text/plain", "contnet": "body of this part" }
-    - { "content_type": "text/html", "contnet": "body of this part" }
+    - { content_type: "text/plain", contnet: "body of this part" }
+    - { content_type: "text/html", contnet: "body of this part" }
   attachments:
-    - { "filename": "invoice.pdf", "content_type": "application/pdf", "content": "base64 of binary data" }
-    - { "filename": "invoice2.pdf", "content_type": "application/pdf", "content": "base64 of binary data" }
+    - { filename": "invoice.pdf", content_type: "application/pdf", content: "base64 of binary data" }
+    - { filename": "invoice2.pdf", content_type: "application/pdf", content: "base64 of binary data" }
 ```
 
 ### Handling JSON data in PHP
