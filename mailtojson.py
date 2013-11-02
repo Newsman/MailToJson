@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+## Open Sourced by - Newsman App www.newsmanapp.com
+## (c) 2013 Newsman App
+## https://github.com/Newsman/MailToJson
+
 import sys, urllib2, email, re, csv, StringIO, base64, json
 from optparse import OptionParser
 
