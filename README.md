@@ -19,7 +19,7 @@ mailtojson_autoreply: "|/nethosting/mailtojson/mailtojson.py -u http://internal.
 
 ## JSON Format
 
-'''yaml
+```yaml
 json:
   headers:
     header_key1: value
@@ -40,7 +40,7 @@ json:
   attachments:
     - { "filename": "invoice.pdf", "content_type": "application/pdf", "content": "base64 of binary data" }
     - { "filename": "invoice2.pdf", "content_type": "application/pdf", "content": "base64 of binary data" }
-'''
+```
 
 ### Handling JSON data in PHP
 
@@ -55,3 +55,7 @@ $json_data = json_decode($json_str, true);
 var_dump($json_data);
 ?>
 ```
+
+# License
+
+This code is released under [MIT license](https://github.com/Newsman/MailToJson/blob/master/LICENSE) by [Newsman App - Smart Email Service Provider](http://www.newsmanapp.com).
