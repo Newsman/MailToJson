@@ -97,6 +97,7 @@ class MailJson:
         if v is None:
             return None
 
+        v = v.replace("\n", " ").replace("\r", " ")
         s = StringIO.StringIO(v)
         c = csv.reader(s)
         row = c.next()
