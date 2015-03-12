@@ -99,7 +99,7 @@ class MailJson:
 
         # Sometimes a list is passed, which breaks .replace()
         if isinstance(v, list):
-            v = ','.join(v)
+            v = ",".join(v)
         v = v.replace("\n", " ").replace("\r", " ")
         s = StringIO.StringIO(v)
         c = csv.reader(s)
@@ -118,9 +118,9 @@ class MailJson:
 
             # If all else has failed
             if entry and e is None:
-                e_split = entry.split(' ')
-                e = e_split[-1].replace('<', '').replace('>','')
-                entry = ' '.join(e_split[:-1])
+                e_split = entry.split(" ")
+                e = e_split[-1].replace("<", "").replace(">","")
+                entry = " ".join(e_split[:-1])
 
             ret.append({"name": entry, "email": e})
 
@@ -134,24 +134,24 @@ class MailJson:
         failobj is returned.
         """
         missing = object()
-        charset = part.get_param('charset', missing)
+        charset = part.get_param("charset", missing)
         if charset is missing:
             return failobj
         if isinstance(charset, tuple):
             # RFC 2231 encoded, so decode it, and it better end up as ascii.
-            pcharset = charset[0] or 'us-ascii'
+            pcharset = charset[0] or "us-ascii"
             try:
                 # LookupError will be raised if the charset isn't known to
                 # Python.  UnicodeError will be raised if the encoded text
                 # contains a character not in the charset.
-                charset = unicode(charset[2], pcharset).encode('us-ascii')
+                charset = unicode(charset[2], pcharset).encode("us-ascii")
             except (LookupError, UnicodeError):
                 charset = charset[2]
         # charset character must be in us-ascii range
         try:
             if isinstance(charset, unicode):
                 charset = charset.encode("us-ascii")
-            charset = unicode(charset, 'us-ascii').encode('us-ascii')
+            charset = unicode(charset, "us-ascii").encode("us-ascii")
         except UnicodeError:
             return failobj
         # RFC 2046, $4.1.2 says charsets are not case sensitive
