@@ -97,6 +97,9 @@ class MailJson:
         if v is None:
             return None
 
+        # Sometimes a list is passed, which breaks .replace()
+        if isinstance(v, list):
+            v = ','.join(v)
         v = v.replace("\n", " ").replace("\r", " ")
         s = StringIO.StringIO(v)
         c = csv.reader(s)
@@ -112,6 +115,12 @@ class MailJson:
                 e = self._extract_email(entry)
                 entry = entry.replace("<%s>" % e, "")
                 entry = entry.strip()
+
+            # If all else has failed
+            if entry and e is None:
+                e_split = entry.split(' ')
+                e = e_split[-1].replace('<', '').replace('>','')
+                entry = ' '.join(e_split[:-1])
 
             ret.append({"name": entry, "email": e})
 
@@ -187,8 +196,12 @@ class MailJson:
                 a = { "filename": filename, "content": base64.b64encode(part.get_payload(decode = True)), "content_type": part.get_content_type() }
                 attachments.append(a)
             else:
-                p = {"content_type": part.get_content_type(), "content": unicode(part.get_payload(decode = 1), self._get_content_charset(part, "utf-8"), "ignore").encode(self.encoding) }
-                parts.append(p)
+                try:
+                    p = {"content_type": part.get_content_type(), "content": unicode(part.get_payload(decode = 1), self._get_content_charset(part, "utf-8"), "ignore").encode(self.encoding) }
+                    parts.append(p)
+                except LookupError:
+                    # Sometimes an encoding isn't recognised - not much to be done
+                    pass
 
         self.data["attachments"] = attachments
         self.data["parts"] = parts
