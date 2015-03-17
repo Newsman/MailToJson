@@ -25,6 +25,7 @@ json:
     header_key1: value
     header_key2: value
   subject: "The email subject as utf-8 string"
+  datetime: "2015-03-17 17:48:06"
   encoding: "utf-8"
   from:
     - { name: "Sender Name", email: "sender@email.com" }

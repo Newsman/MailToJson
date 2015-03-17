@@ -4,8 +4,10 @@
 ## (c) 2013 Newsman App
 ## https://github.com/Newsman/MailToJson
 
-import sys, urllib2, email, re, csv, StringIO, base64, json
+import sys, urllib2, email, re, csv, StringIO, base64, json, datetime, pprint
 from optparse import OptionParser
+
+VERSION = "1.3"
 
 ERROR_NOUSER = 67
 ERROR_PERM_DENIED = 77
@@ -20,7 +22,7 @@ email_re = re.compile(
     r'|\[(25[0-5]|2[0-4]\d|[0-1]?\d?\d)(\.(25[0-5]|2[0-4]\d|[0-1]?\d?\d)){3}\]$', re.IGNORECASE)
 
 email_extract_re = re.compile("<(([.0-9a-z_+-=]+)@(([0-9a-z-]+\.)+[0-9a-z]{2,9}))>", re.M|re.S|re.I)
-filename_re = re.compile("filename=\"(.*?)\"", re.I|re.S)
+filename_re = re.compile("filename=\"(.+)\"|filename=([^;\n\r\"\']+)", re.I|re.S)
 
 class MailJson:
     def __init__(self, content):
@@ -126,6 +128,19 @@ class MailJson:
 
         return ret
 
+    def _parse_date(self, v):
+        if v is None:
+            return datetime.datetime.now()
+
+        tt = email.utils.parsedate_tz(v)
+
+        if tt is None:
+            return datetime.datetime.now()
+
+        timestamp = email.utils.mktime_tz(tt)
+        date = datetime.datetime.fromtimestamp(timestamp)
+        return date
+
     def _get_content_charset(self, part, failobj = None):
         """Return the charset parameter of the Content-Type header.
 
@@ -173,6 +188,7 @@ class MailJson:
                 headers[k] = v
 
         self.data["headers"] = headers
+        self.data["datetime"] = self._parse_date(headers.get("date", None)).strftime("%Y-%m-%d %H:%M:%S")
         self.data["subject"] = headers.get("subject", None)
         self.data["to"] = self._parse_recipients(headers.get("to", None))
         self.data["from"] = self._parse_recipients(headers.get("from", None))
@@ -189,7 +205,7 @@ class MailJson:
                 # we have attachment
                 r = filename_re.findall(content_disposition)
                 if r:
-                    filename = r[0]
+                    filename = sorted(r[0])[1]
                 else:
                     filename = "undefined"
 
@@ -210,29 +226,34 @@ class MailJson:
     def getData(self):
         return self.data
 
-usage = "usage: %prog [options]"
-parser = OptionParser(usage)
-parser.add_option("-u", "--url", dest = "url", action = "store", help = "the url where to post the mail data as json")
+if __name__ == "__main__":
+    usage = "usage: %prog [options]"
+    parser = OptionParser(usage)
+    parser.add_option("-u", "--url", dest = "url", action = "store", help = "the url where to post the mail data as json")
+    parser.add_option("-p", "--print", dest = "do_print", action = "store_true", help = "no json posting, just print the data")
 
-opt, args = parser.parse_args()
+    opt, args = parser.parse_args()
 
-if not opt.url:
-    print parser.format_help()
-    sys.exit(1)
+    if not opt.url and not opt.do_print:
+        print parser.format_help()
+        sys.exit(1)
 
-content = sys.stdin.read()
+    content = sys.stdin.read()
 
-try:
-    mj = MailJson(content)
-    mj.parse()
-    data = mj.getData()
+    try:
+        mj = MailJson(content)
+        mj.parse()
+        data = mj.getData()
 
-    headers = {"Content-Type": "application/json; charset=%s" % data.get("encoding")}
-    req = urllib2.Request(opt.url, json.dumps(data, encoding = data.get("encoding")), headers)
-    resp = urllib2.urlopen(req)
-    ret = resp.read()
+        if opt.do_print:
+            pprint.pprint(data)
+        else:
+            headers = { "Content-Type": "application/json; charset=%s" % data.get("encoding"), "User-Agent": "NewsmanApp/MailToJson %s - https://github.com/Newsman/MailToJson" % VERSION }
+            req = urllib2.Request(opt.url, json.dumps(data, encoding = data.get("encoding")), headers)
+            resp = urllib2.urlopen(req)
+            ret = resp.read()
 
-    print "Parsed Mail Data sent to: %s\n" % opt.url
-except Exception, inst:
-    print "ERR: %s" % inst
-    sys.exit(ERROR_TEMP_FAIL)
+            print "Parsed Mail Data sent to: %s\n" % opt.url
+    except Exception, inst:
+        print "ERR: %s" % inst
+        sys.exit(ERROR_TEMP_FAIL)
