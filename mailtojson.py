@@ -105,15 +105,19 @@ class MailJson:
         if v is None:
             return None
 
+        ret = []
+        
         # Sometimes a list is passed, which breaks .replace()
         if isinstance(v, list):
             v = ",".join(v)
-        v = v.replace("\n", " ").replace("\r", " ")
+        v = v.replace("\n", " ").replace("\r", " ").strip()
         s = StringIO.StringIO(v)
         c = csv.reader(s)
-        row = c.next()
-
-        ret = []
+        try:
+            row = c.next()
+        except StopIteration:
+            return ret
+            
         for entry in row:
             entry = entry.strip()
             if email_re.match(entry):
