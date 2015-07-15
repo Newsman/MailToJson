@@ -59,4 +59,4 @@ var_dump($json_data);
 
 # License
 
-This code is released under [MIT license](https://github.com/Newsman/MailToJson/blob/master/LICENSE) by [Newsman App - Smart Email Service Provider](http://www.newsmanapp.com).
+This code is released under [MIT license](https://github.com/Newsman/MailToJson/blob/master/LICENSE) by [Newsman App - Smart Email Service Provider](https://www.newsmanapp.com).
