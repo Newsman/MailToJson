@@ -7,7 +7,7 @@
 import sys, urllib2, email, re, csv, StringIO, base64, json, datetime, pprint
 from optparse import OptionParser
 
-VERSION = "1.3"
+VERSION = "1.3.1"
 
 ERROR_NOUSER = 67
 ERROR_PERM_DENIED = 77
@@ -24,8 +24,11 @@ email_re = re.compile(
 email_extract_re = re.compile("<(([.0-9a-z_+-=]+)@(([0-9a-z-]+\.)+[0-9a-z]{2,9}))>", re.M|re.S|re.I)
 filename_re = re.compile("filename=\"(.+)\"|filename=([^;\n\r\"\']+)", re.I|re.S)
 
+begin_tab_re = re.compile("^\t{1,}", re.M)
+begin_space_re = re.compile("^\s{1,}", re.M)
+
 class MailJson:
-    def __init__(self, content):
+    def __init__(self, content = None):
         self.data = {}
         self.encoding = "utf-8" # output encoding
         self.setContent(content)
@@ -36,7 +39,10 @@ class MailJson:
     def setContent(self, content):
         self.content = content
 
-    def _fixEncodedSubject(subject):
+    def _fixEncodedSubject(self, subject):
+        if subject is None:
+            return ""
+        
         subject = "%s" % subject
         subject = subject.strip()
 
@@ -189,7 +195,7 @@ class MailJson:
 
         self.data["headers"] = headers
         self.data["datetime"] = self._parse_date(headers.get("date", None)).strftime("%Y-%m-%d %H:%M:%S")
-        self.data["subject"] = headers.get("subject", None)
+        self.data["subject"] = self._fixEncodedSubject(headers.get("subject", None))
         self.data["to"] = self._parse_recipients(headers.get("to", None))
         self.data["from"] = self._parse_recipients(headers.get("from", None))
         self.data["cc"] = self._parse_recipients(headers.get("cc", None))
@@ -222,6 +228,8 @@ class MailJson:
         self.data["attachments"] = attachments
         self.data["parts"] = parts
         self.data["encoding"] = self.encoding
+        
+        return self.getData()
 
     def getData(self):
         return self.data
