@@ -74,6 +74,7 @@ class MailJson:
         if len(ret) < 1:
             p = s.split(" ")
             for e in p:
+                e = e.strip()
                 if email_re.match(e):
                     return e
                 
