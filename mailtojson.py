@@ -72,6 +72,11 @@ class MailJson:
     def _extract_email(self, s):
         ret = email_extract_re.findall(s)
         if len(ret) < 1:
+            p = s.split(" ")
+            for e in p:
+                if email_re.match(e):
+                    return e
+                
             return None
         else:
             return ret[0][0]
@@ -127,6 +132,8 @@ class MailJson:
                 e = self._extract_email(entry)
                 entry = entry.replace("<%s>" % e, "")
                 entry = entry.strip()
+                if e and entry.find(e) != -1:
+                    entry = entry.replace(e, "").strip()
 
             # If all else has failed
             if entry and e is None:
@@ -243,6 +250,7 @@ if __name__ == "__main__":
     parser = OptionParser(usage)
     parser.add_option("-u", "--url", dest = "url", action = "store", help = "the url where to post the mail data as json")
     parser.add_option("-p", "--print", dest = "do_print", action = "store_true", help = "no json posting, just print the data")
+    parser.add_option("-d", "--dump", dest = "do_dump", action = "store_true", help = "if present print to output the url post response")
 
     opt, args = parser.parse_args()
 
@@ -266,6 +274,8 @@ if __name__ == "__main__":
             ret = resp.read()
 
             print "Parsed Mail Data sent to: %s\n" % opt.url
+            if opt.do_dump:
+                print ret
     except Exception, inst:
         print "ERR: %s" % inst
         sys.exit(ERROR_TEMP_FAIL)
