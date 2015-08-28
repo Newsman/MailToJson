@@ -35,9 +35,9 @@ json:
   cc:
     - { name: "Recipient Name", email: "recpient@email.com" }
     - { name: "Recipient Name 2", email: "recpient2@email.com" }
-  parts: 
-    - { content_type: "text/plain", content: "body of this part" }
-    - { content_type: "text/html", content: "body of this part" }
+  parts:
+    - { content_type: "text/plain", content: "body of this part", "headers": { "header_key1": value, "header_key2": value } }
+    - { content_type: "text/html", content: "body of this part", "headers": { "header_key1": value, "header_key2": value } }
   attachments:
     - { filename": "invoice.pdf", content_type: "application/pdf", content: "base64 of binary data" }
     - { filename": "invoice2.pdf", content_type: "application/pdf", content: "base64 of binary data" }

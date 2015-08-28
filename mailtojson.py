@@ -30,6 +30,7 @@ begin_space_re = re.compile("^\s{1,}", re.M)
 class MailJson:
     def __init__(self, content = None):
         self.data = {}
+        self.raw_parts = []
         self.encoding = "utf-8" # output encoding
         self.setContent(content)
 
@@ -42,7 +43,7 @@ class MailJson:
     def _fixEncodedSubject(self, subject):
         if subject is None:
             return ""
-        
+
         subject = "%s" % subject
         subject = subject.strip()
 
@@ -77,7 +78,7 @@ class MailJson:
                 e = e.strip()
                 if email_re.match(e):
                     return e
-                
+
             return None
         else:
             return ret[0][0]
@@ -112,7 +113,7 @@ class MailJson:
             return None
 
         ret = []
-        
+
         # Sometimes a list is passed, which breaks .replace()
         if isinstance(v, list):
             v = ",".join(v)
@@ -123,7 +124,7 @@ class MailJson:
             row = c.next()
         except StopIteration:
             return ret
-            
+
         for entry in row:
             entry = entry.strip()
             if email_re.match(entry):
@@ -190,14 +191,12 @@ class MailJson:
         # RFC 2046, $4.1.2 says charsets are not case sensitive
         return charset.lower()
 
-    def parse(self):
-        self.msg = email.message_from_string(self.content)
-
+    def _get_part_headers(self, part):
         # raw headers
         headers = {}
-        for k in self.msg.keys():
+        for k in part.keys():
             k = k.lower()
-            v = self.msg.get_all(k)
+            v = part.get_all(k)
             v = self._decode_headers(v)
 
             if len(v) == 1:
@@ -205,6 +204,12 @@ class MailJson:
             else:
                 headers[k] = v
 
+        return headers
+
+    def parse(self):
+        self.msg = email.message_from_string(self.content)
+
+        headers = self._get_part_headers(self.msg)
         self.data["headers"] = headers
         self.data["datetime"] = self._parse_date(headers.get("date", None)).strftime("%Y-%m-%d %H:%M:%S")
         self.data["subject"] = self._fixEncodedSubject(headers.get("subject", None))
@@ -231,8 +236,9 @@ class MailJson:
                 attachments.append(a)
             else:
                 try:
-                    p = {"content_type": part.get_content_type(), "content": unicode(part.get_payload(decode = 1), self._get_content_charset(part, "utf-8"), "ignore").encode(self.encoding) }
+                    p = { "content_type": part.get_content_type(), "content": unicode(part.get_payload(decode = 1), self._get_content_charset(part, "utf-8"), "ignore").encode(self.encoding), "headers": self._get_part_headers(part) }
                     parts.append(p)
+                    self.raw_parts.append(part)
                 except LookupError:
                     # Sometimes an encoding isn't recognised - not much to be done
                     pass
@@ -240,11 +246,14 @@ class MailJson:
         self.data["attachments"] = attachments
         self.data["parts"] = parts
         self.data["encoding"] = self.encoding
-        
-        return self.getData()
 
-    def getData(self):
+        return self.get_data()
+
+    def get_data(self):
         return self.data
+
+    def get_raw_parts(self):
+        return self.raw_parts
 
 if __name__ == "__main__":
     usage = "usage: %prog [options]"
@@ -264,7 +273,7 @@ if __name__ == "__main__":
     try:
         mj = MailJson(content)
         mj.parse()
-        data = mj.getData()
+        data = mj.get_data()
 
         if opt.do_print:
             pprint.pprint(data)
