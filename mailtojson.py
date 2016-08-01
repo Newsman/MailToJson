@@ -214,6 +214,7 @@ class MailJson:
         self.data["datetime"] = self._parse_date(headers.get("date", None)).strftime("%Y-%m-%d %H:%M:%S")
         self.data["subject"] = self._fixEncodedSubject(headers.get("subject", None))
         self.data["to"] = self._parse_recipients(headers.get("to", None))
+        self.data["reply-to"] = self._parse_recipients(headers.get("reply-to", None))
         self.data["from"] = self._parse_recipients(headers.get("from", None))
         self.data["cc"] = self._parse_recipients(headers.get("cc", None))
 
