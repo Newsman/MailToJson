@@ -9,12 +9,12 @@ the data and makes a POST call with RAW JSON to the url (passed as command line 
 
 Example usage (command line):
 ```bash
-cat mail.eml | python mailtojson.py -u https://internal.dev.newsman.app/autoreply/handle.php
+cat mail.eml | python mailtojson.py -u https://dev.url/autoreply/handle.php
 ```
 
 Example usage (postfix aliases):
 ```bash
-mailtojson_autoreply: "|/nethosting/mailtojson/mailtojson.py -u https://internal.dev.newsman.app/autoreply/handle.php"
+mailtojson_autoreply: "|/nethosting/mailtojson/mailtojson.py -u https://dev.url/autoreply/handle.php"
 ```
 
 ## JSON Format
