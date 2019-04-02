@@ -280,7 +280,7 @@ if __name__ == "__main__":
             print(json.dumps(data, encoding = data.get("encoding")))
         else:
             headers = { "Content-Type": "application/json; charset=%s" % data.get("encoding"), "User-Agent": "NewsmanApp/MailToJson %s - https://github.com/Newsman/MailToJson" % VERSION }
-            req = urllib2.Request(opt.url, json.dumps(data, encoding = data.get("encoding")), headers)
+            req = urllib2.Request(opt.url.replace("\n", "").replace("\r", ""), json.dumps(data, encoding = data.get("encoding")), headers)
             resp = urllib2.urlopen(req)
             ret = resp.read()
 
