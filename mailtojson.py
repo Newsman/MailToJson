@@ -23,6 +23,7 @@ email_re = re.compile(
 
 email_extract_re = re.compile("<(([.0-9a-z_+-=]+)@(([0-9a-z-]+\.)+[0-9a-z]{2,9}))>", re.M|re.S|re.I)
 filename_re = re.compile("filename=\"(.+)\"|filename=([^;\n\r\"\']+)", re.I|re.S)
+contenttype_filename_re = re.compile("name=\"(.+)\"|name=([^;\n\r\"\']+)", re.I|re.S)
 
 begin_tab_re = re.compile("^\t{1,}", re.M)
 begin_space_re = re.compile("^\s{1,}", re.M)
@@ -227,11 +228,17 @@ class MailJson:
             content_disposition = part.get("Content-Disposition", None)
             if content_disposition:
                 # we have attachment
+                filename = "undefined"
+                
                 r = filename_re.findall(content_disposition)
                 if r:
                     filename = sorted(r[0])[1]
                 else:
-                    filename = "undefined"
+                    content_type = part.get("Content-Type", None)
+                    if content_type:
+                        r = contenttype_filename_re.findall(content_type)
+                        if r:
+                            filename = sorted(r[0])[1]
 
                 a = { "filename": filename, "content": base64.b64encode(part.get_payload(decode = True)), "content_type": part.get_content_type() }
                 attachments.append(a)
